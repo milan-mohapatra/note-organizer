@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Collection, Db, ObjectId } from 'mongodb';
 import { toObjectId } from 'src/utils/type-casting.util';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { UserDocument } from './types/user.type';
+import { TUserToInsert, UserDocument } from './types/user.type';
 import { handleDatabaseError } from 'src/common/exception/db.exception';
 
 @Injectable()
@@ -12,6 +12,22 @@ export class UserService {
   constructor(@Inject('MONGO_DB') private readonly db: Db) {
     // defining user collection
     this.UserCollection = db.collection<UserDocument>('users');
+  }
+
+  async createNewUser(payload: TUserToInsert) {
+    try {
+      return await this.UserCollection.insertOne(payload);
+    } catch (error) {
+      handleDatabaseError(error);
+    }
+  }
+
+  async getUserByEmail(email: string) {
+    try {
+      return await this.UserCollection.findOne({ email });
+    } catch (error) {
+      handleDatabaseError(error);
+    }
   }
 
   async getAllUsers() {

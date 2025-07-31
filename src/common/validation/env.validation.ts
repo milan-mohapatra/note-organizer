@@ -8,4 +8,6 @@ export const envValidationSchema = Joi.object({
     .valid('development', 'test', 'production')
     .required()
     .default('production'), // TODO: not configure for production env
+  JWT_TOKEN_SECRET: Joi.string().required(), // TODO: not configure for production env and test
+  JWT_TOKEN_EXPIRES_IN_SEC: Joi.number().required(), // TODO: not configure for production env and test
 });

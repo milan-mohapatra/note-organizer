@@ -4,37 +4,30 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Collection, Db } from 'mongodb';
 import { handleDatabaseError } from 'src/common/exception/db.exception';
 import { CreateUserDto } from 'src/user/dtos/create-user.dto';
-import {
-  TUserToInsert,
-  UserDocument,
-  UserRole,
-} from 'src/user/types/user.type';
-import { toObjectId } from 'src/utils/type-casting.util';
+import { TUserToInsert, UserRole } from 'src/user/types/user.type';
 import { HashingProvider } from './provider/hashing.provider';
 import { LoginUserDto } from './dtos/login-user.dto';
+import { UserService } from 'src/user/user.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  private UserCollection: Collection<UserDocument>;
-
   constructor(
-    @Inject('MONGO_DB') private readonly db: Db,
+    private readonly userService: UserService,
     @Inject(HashingProvider) private readonly hashProvider: HashingProvider,
-  ) {
-    // defining user collection
-    this.UserCollection = db.collection<UserDocument>('users');
+    private readonly jwtService: JwtService,
+  ) {}
+
+  generateAccessToken(payload: any) {
+    return this.jwtService.signAsync(payload);
   }
 
-  // POST /auth/signup
   async createNewUser(payload: CreateUserDto) {
     try {
       // checking if email already exist
-      const existing = await this.UserCollection.findOne({
-        email: payload.email,
-      });
+      const existing = await this.userService.getUserByEmail(payload.email);
 
       if (existing) {
         throw new ConflictException('Email already exist');
@@ -49,23 +42,24 @@ export class AuthService {
       };
 
       // creating new user
-      const result = await this.UserCollection.insertOne(userToInsert);
+      const result = await this.userService.createNewUser(userToInsert);
 
-      const user = await this.UserCollection.findOne(
-        { _id: toObjectId(result.insertedId) },
-        { projection: { password: 0 } },
-      );
+      const user = await this.userService.getUserById(result.insertedId);
 
-      return user;
+      const jwtToken = await this.jwtService.signAsync({
+        _id: user._id,
+        role: user.role,
+      });
+
+      return { token: jwtToken, user };
     } catch (error) {
       handleDatabaseError(error);
     }
   }
 
-  // /auth/login
   async userLogin(payload: LoginUserDto) {
     try {
-      const user = await this.UserCollection.findOne({ email: payload.email });
+      const user = await await this.userService.getUserByEmail(payload.email);
 
       if (!user) {
         throw new UnauthorizedException('Invalid email or password');
@@ -83,8 +77,12 @@ export class AuthService {
       // remove sensitive data before returning
       const { password, ...userWithNoPassword } = user;
 
-      //   TODO: generate JWT token
-      return { token: 'jwt-token', user: userWithNoPassword };
+      const jwtToken = this.generateAccessToken({
+        _id: user._id,
+        role: user.role,
+      });
+
+      return { token: jwtToken, user: userWithNoPassword };
     } catch (error) {
       handleDatabaseError(error);
     }
