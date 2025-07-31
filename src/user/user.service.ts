@@ -1,16 +1,9 @@
-import {
-  ConflictException,
-  HttpException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Collection, Db, ObjectId } from 'mongodb';
-import { CreateUserDto } from './dtos/create-user.dto';
 import { toObjectId } from 'src/utils/type-casting.util';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { TUserToInsert, UserDocument, UserRole } from './types/user.type';
+import { UserDocument } from './types/user.type';
+import { handleDatabaseError } from 'src/common/exception/db.exception';
 
 @Injectable()
 export class UserService {
@@ -21,35 +14,6 @@ export class UserService {
     this.UserCollection = db.collection<UserDocument>('users');
   }
 
-  async createNewUser(payload: CreateUserDto) {
-    // TODO: generating encrypted password
-
-    try {
-      // checking if email already exist
-      const existing = await this.UserCollection.findOne({
-        email: payload.email,
-      });
-
-      if (existing) {
-        throw new ConflictException('Email already exist');
-      }
-
-      const userToInsert: TUserToInsert = {
-        ...payload,
-        role: UserRole.User,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      // creating new user
-      const result = await this.UserCollection.insertOne(userToInsert);
-
-      return await this.getUserById(result.insertedId);
-    } catch (error) {
-      this.handleDatabaseError(error);
-    }
-  }
-
   async getAllUsers() {
     try {
       const users = await this.UserCollection.find(
@@ -58,7 +22,7 @@ export class UserService {
       ).toArray();
       return users;
     } catch (error) {
-      this.handleDatabaseError(error);
+      handleDatabaseError(error);
     }
   }
 
@@ -76,7 +40,7 @@ export class UserService {
 
       return user;
     } catch (error) {
-      this.handleDatabaseError(error);
+      handleDatabaseError(error);
     }
   }
 
@@ -94,7 +58,7 @@ export class UserService {
 
       return updatedUser;
     } catch (error) {
-      this.handleDatabaseError(error);
+      handleDatabaseError(error);
     }
   }
 
@@ -111,18 +75,7 @@ export class UserService {
 
       return;
     } catch (error) {
-      this.handleDatabaseError(error);
+      handleDatabaseError(error);
     }
-  }
-
-  //shared error handler for db operation
-  private handleDatabaseError(error: unknown): never {
-    if (error instanceof HttpException) {
-      throw error;
-    }
-
-    throw new InternalServerErrorException(
-      error instanceof Error ? error.message : 'Something went wrong',
-    );
   }
 }

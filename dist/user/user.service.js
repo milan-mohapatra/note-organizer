@@ -16,7 +16,7 @@ exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
 const mongodb_1 = require("mongodb");
 const type_casting_util_1 = require("../utils/type-casting.util");
-const user_type_1 = require("./types/user.type");
+const db_exception_1 = require("../common/exception/db.exception");
 let UserService = class UserService {
     db;
     UserCollection;
@@ -24,34 +24,13 @@ let UserService = class UserService {
         this.db = db;
         this.UserCollection = db.collection('users');
     }
-    async createNewUser(payload) {
-        try {
-            const existing = await this.UserCollection.findOne({
-                email: payload.email,
-            });
-            if (existing) {
-                throw new common_1.ConflictException('Email already exist');
-            }
-            const userToInsert = {
-                ...payload,
-                role: user_type_1.UserRole.User,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            const result = await this.UserCollection.insertOne(userToInsert);
-            return await this.getUserById(result.insertedId);
-        }
-        catch (error) {
-            this.handleDatabaseError(error);
-        }
-    }
     async getAllUsers() {
         try {
             const users = await this.UserCollection.find({}, { projection: { password: 0 } }).toArray();
             return users;
         }
         catch (error) {
-            this.handleDatabaseError(error);
+            (0, db_exception_1.handleDatabaseError)(error);
         }
     }
     async getUserById(userId) {
@@ -63,7 +42,7 @@ let UserService = class UserService {
             return user;
         }
         catch (error) {
-            this.handleDatabaseError(error);
+            (0, db_exception_1.handleDatabaseError)(error);
         }
     }
     async updateUserById(body, userId) {
@@ -75,7 +54,7 @@ let UserService = class UserService {
             return updatedUser;
         }
         catch (error) {
-            this.handleDatabaseError(error);
+            (0, db_exception_1.handleDatabaseError)(error);
         }
     }
     async deleteUserById(userId) {
@@ -89,14 +68,8 @@ let UserService = class UserService {
             return;
         }
         catch (error) {
-            this.handleDatabaseError(error);
+            (0, db_exception_1.handleDatabaseError)(error);
         }
-    }
-    handleDatabaseError(error) {
-        if (error instanceof common_1.HttpException) {
-            throw error;
-        }
-        throw new common_1.InternalServerErrorException(error instanceof Error ? error.message : 'Something went wrong');
     }
 };
 exports.UserService = UserService;

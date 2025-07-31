@@ -1,11 +1,27 @@
 import { CreateUserDto } from 'src/user/dtos/create-user.dto';
-import { UserService } from 'src/user/user.service';
+import { AuthService } from './auth.service';
+import { LoginUserDto } from './dtos/login-user.dto';
 export declare class AuthController {
-    private readonly userService;
-    constructor(userService: UserService);
+    private readonly authService;
+    constructor(authService: AuthService);
     signUp(body: CreateUserDto): Promise<{
         statusCode: number;
         message: string;
-        data: import("mongodb").WithId<import("../user/types/user.type").UserDocument>;
+        data: import("mongodb").WithId<import("../user/types/user.type").UserDocument> | null;
+    }>;
+    logIn(body: LoginUserDto): Promise<{
+        statusCode: number;
+        message: string;
+        data: {
+            token: string;
+            user: {
+                role: import("../user/types/user.type").UserRole;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                email: string;
+                _id: import("bson").ObjectId;
+            };
+        };
     }>;
 }
