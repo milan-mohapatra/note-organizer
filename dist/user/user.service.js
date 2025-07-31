@@ -24,6 +24,22 @@ let UserService = class UserService {
         this.db = db;
         this.UserCollection = db.collection('users');
     }
+    async createNewUser(payload) {
+        try {
+            return await this.UserCollection.insertOne(payload);
+        }
+        catch (error) {
+            (0, db_exception_1.handleDatabaseError)(error);
+        }
+    }
+    async getUserByEmail(email) {
+        try {
+            return await this.UserCollection.findOne({ email });
+        }
+        catch (error) {
+            (0, db_exception_1.handleDatabaseError)(error);
+        }
+    }
     async getAllUsers() {
         try {
             const users = await this.UserCollection.find({}, { projection: { password: 0 } }).toArray();

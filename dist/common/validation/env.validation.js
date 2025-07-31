@@ -10,5 +10,7 @@ exports.envValidationSchema = Joi.object({
         .valid('development', 'test', 'production')
         .required()
         .default('production'),
+    JWT_TOKEN_SECRET: Joi.string().required(),
+    JWT_TOKEN_EXPIRES_IN_SEC: Joi.number().required(),
 });
 //# sourceMappingURL=env.validation.js.map

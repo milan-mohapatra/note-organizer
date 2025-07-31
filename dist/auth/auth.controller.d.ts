@@ -7,13 +7,16 @@ export declare class AuthController {
     signUp(body: CreateUserDto): Promise<{
         statusCode: number;
         message: string;
-        data: import("mongodb").WithId<import("../user/types/user.type").UserDocument> | null;
+        data: {
+            token: string;
+            user: import("mongodb").WithId<import("../user/types/user.type").UserDocument>;
+        };
     }>;
     logIn(body: LoginUserDto): Promise<{
         statusCode: number;
         message: string;
         data: {
-            token: string;
+            token: Promise<string>;
             user: {
                 role: import("../user/types/user.type").UserRole;
                 createdAt: Date;
