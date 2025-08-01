@@ -44,7 +44,7 @@ export class AuthService {
       const user = await this.userService.getUserById(result.insertedId);
 
       const jwtToken = await this.tokenService.signToken({
-        _id: user._id,
+        sub: user._id,
         role: user.role,
       });
 
@@ -75,7 +75,7 @@ export class AuthService {
       const { password, ...userWithNoPassword } = user;
 
       const jwtToken = await this.tokenService.signToken({
-        _id: user._id,
+        sub: user._id,
         role: user.role,
       });
 

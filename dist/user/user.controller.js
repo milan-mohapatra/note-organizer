@@ -16,6 +16,7 @@ exports.UserController = void 0;
 const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
 const update_user_dto_1 = require("./dtos/update-user.dto");
+const authorize_guard_1 = require("./guards/authorize.guard");
 let UserController = class UserController {
     userService;
     constructor(userService) {
@@ -73,6 +74,7 @@ __decorate([
 ], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([
     (0, common_1.Controller)('user'),
+    (0, common_1.UseGuards)(authorize_guard_1.AuthorizeGuard),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map
