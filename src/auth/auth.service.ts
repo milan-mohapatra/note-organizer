@@ -11,18 +11,15 @@ import { HashingProvider } from './provider/hashing.provider';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { TokenService } from 'src/common/token/token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     @Inject(HashingProvider) private readonly hashProvider: HashingProvider,
-    private readonly jwtService: JwtService,
+    private readonly tokenService: TokenService,
   ) {}
-
-  generateAccessToken(payload: any) {
-    return this.jwtService.signAsync(payload);
-  }
 
   async createNewUser(payload: CreateUserDto) {
     try {
@@ -46,7 +43,7 @@ export class AuthService {
 
       const user = await this.userService.getUserById(result.insertedId);
 
-      const jwtToken = await this.jwtService.signAsync({
+      const jwtToken = await this.tokenService.signToken({
         _id: user._id,
         role: user.role,
       });
@@ -77,7 +74,7 @@ export class AuthService {
       // remove sensitive data before returning
       const { password, ...userWithNoPassword } = user;
 
-      const jwtToken = this.generateAccessToken({
+      const jwtToken = await this.tokenService.signToken({
         _id: user._id,
         role: user.role,
       });

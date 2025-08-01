@@ -18,18 +18,15 @@ const db_exception_1 = require("../common/exception/db.exception");
 const user_type_1 = require("../user/types/user.type");
 const hashing_provider_1 = require("./provider/hashing.provider");
 const user_service_1 = require("../user/user.service");
-const jwt_1 = require("@nestjs/jwt");
+const token_service_1 = require("../common/token/token.service");
 let AuthService = class AuthService {
     userService;
     hashProvider;
-    jwtService;
-    constructor(userService, hashProvider, jwtService) {
+    tokenService;
+    constructor(userService, hashProvider, tokenService) {
         this.userService = userService;
         this.hashProvider = hashProvider;
-        this.jwtService = jwtService;
-    }
-    generateAccessToken(payload) {
-        return this.jwtService.signAsync(payload);
+        this.tokenService = tokenService;
     }
     async createNewUser(payload) {
         try {
@@ -46,7 +43,7 @@ let AuthService = class AuthService {
             };
             const result = await this.userService.createNewUser(userToInsert);
             const user = await this.userService.getUserById(result.insertedId);
-            const jwtToken = await this.jwtService.signAsync({
+            const jwtToken = await this.tokenService.signToken({
                 _id: user._id,
                 role: user.role,
             });
@@ -67,7 +64,7 @@ let AuthService = class AuthService {
                 throw new common_1.UnauthorizedException('Invalid email or password');
             }
             const { password, ...userWithNoPassword } = user;
-            const jwtToken = this.generateAccessToken({
+            const jwtToken = await this.tokenService.signToken({
                 _id: user._id,
                 role: user.role,
             });
@@ -84,6 +81,6 @@ exports.AuthService = AuthService = __decorate([
     __param(1, (0, common_1.Inject)(hashing_provider_1.HashingProvider)),
     __metadata("design:paramtypes", [user_service_1.UserService,
         hashing_provider_1.HashingProvider,
-        jwt_1.JwtService])
+        token_service_1.TokenService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

@@ -6,21 +6,10 @@ import { HashingProvider } from './provider/hashing.provider';
 import { BcryptProvider } from './provider/bcrypt.provider';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TokenModule } from 'src/common/token/token.module';
 
 @Module({
-  imports: [
-    UserModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_TOKEN_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<number>('JWT_TOKEN_EXPIRES_IN_SEC'),
-        },
-      }),
-      inject: [ConfigService],
-    }),
-  ],
+  imports: [UserModule, TokenModule],
   controllers: [AuthController],
   providers: [
     AuthService,

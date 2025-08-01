@@ -3,19 +3,18 @@ import { UserRole } from 'src/user/types/user.type';
 import { HashingProvider } from './provider/hashing.provider';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { UserService } from 'src/user/user.service';
-import { JwtService } from '@nestjs/jwt';
+import { TokenService } from 'src/common/token/token.service';
 export declare class AuthService {
     private readonly userService;
     private readonly hashProvider;
-    private readonly jwtService;
-    constructor(userService: UserService, hashProvider: HashingProvider, jwtService: JwtService);
-    generateAccessToken(payload: any): Promise<string>;
+    private readonly tokenService;
+    constructor(userService: UserService, hashProvider: HashingProvider, tokenService: TokenService);
     createNewUser(payload: CreateUserDto): Promise<{
         token: string;
         user: import("mongodb").WithId<import("src/user/types/user.type").UserDocument>;
     }>;
     userLogin(payload: LoginUserDto): Promise<{
-        token: Promise<string>;
+        token: string;
         user: {
             role: UserRole;
             createdAt: Date;

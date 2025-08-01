@@ -16,7 +16,7 @@ export declare class AuthController {
         statusCode: number;
         message: string;
         data: {
-            token: Promise<string>;
+            token: string;
             user: {
                 role: import("../user/types/user.type").UserRole;
                 createdAt: Date;
